@@ -26,29 +26,19 @@ namespace sofs19
         SODirEntry entryBlockDirs[DPB];
 
         /* Filling all the SODirEntry's(Block) with zeros */
-        /* Memset() is more eficient than manual changing all data fields "in" to zeros */
         memset( entryBlockDirs, 0, BlockSize );
         
-        /* Filling with "NullReference" Data Field "namespace" in all SODirEntry dir's */
+        /* Filling with "NullReference" Data Field "in" in all SODirEntry dir's */
         for (uint32_t i = 2; i < DPB; i++)
-        { entryBlockDirs[i] -> in = NullReference; }
+        { entryBlockDirs[i].in = NullReference; }
 
-        /* Setting the first SODirEntry to "." and the second one to ".." */
-        entryBlockDirs[0] -> name = ".";
-        entryBlockDirs[1] -> name = "..";
+        /* Setting the Data Field "name" in the first SODirEntry to "." and the second one to ".." */
+        memcpy( entryBlockDirs[0].name, ".", 1 );
+        memcpy( entryBlockDirs[1].name, "..", 2 );
 
         /* Writing the block "inodesTotal/InodePerBlock + 1(SuperBlock)" in the raw disk */
         /* The division between itotal and IPB is always with rest 0 */
         soWriteRawBlock( itotal/IPB + 1, entryBlockDirs );
-        
-        if (rdsize == 2)
-        {
-            SODirEntry entryBlock2Dirs[DPB];
-            memset( entryBlock2Dirs, 0, BlockSize );
-            for(uint32_t i = 0; i < DPB; i++)
-            { entryBlock2Dirs[i] -> in = NullReference; }
-            soWriteRawBlock( itotal/IPB + 2, entryBlock2Dirs );
-        }
     }
 };
 
