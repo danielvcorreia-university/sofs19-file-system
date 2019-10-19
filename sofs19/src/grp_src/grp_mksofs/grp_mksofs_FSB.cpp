@@ -36,7 +36,7 @@ namespace sofs19
         sb.head_blk = 1;
         sb.head_idx = 1;                                   
         sb.tail_blk = nbref;
-        // sb.tail_idx = 256 - something 
+        sb.tail_idx = sb.dz_total - 65; // não percebi a lógica, mas segue este padrão 
         
         HeadCache head;
         for(int i = 0; i < HEAD_CACHE_SIZE; i++)
@@ -48,7 +48,9 @@ namespace sofs19
             tail.ref[i] = NullReference;
         tail.idx = 0; // maybe
 
-        binFillSuperBlock(name, ntotal, itotal, nbref);
+        soWriteRawBlock(0, &sb);
+
+        //binFillSuperBlock(name, ntotal, itotal, nbref);
     }
 };
 
