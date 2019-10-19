@@ -24,7 +24,6 @@ namespace sofs19
         
         /* Done by: Daniel Vala Correia */
 
-        soOpenSuperBlock ();
         SOSuperBlock * super = soGetSuperBlockPointer();
 
         /* Does nothing if the cache isn't empty */
@@ -97,7 +96,6 @@ namespace sofs19
         }
 
         soSaveSuperBlock ();
-        soCloseSuperBlock ();
     }
 };
 
