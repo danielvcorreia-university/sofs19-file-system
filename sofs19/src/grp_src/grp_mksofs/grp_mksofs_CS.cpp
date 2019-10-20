@@ -25,8 +25,8 @@ namespace sofs19
     {
        soProbe(601, "%s(%u, %u, ...)\n", __FUNCTION__, ntotal, itotal);
             
-            /* change the following line by your code */
-            //bin::computeStructure(ntotal, itotal, btotal);
+             /* change the following line by your code */
+            binComputeStructure(ntotal, itotal, nbref);
 
             // if it is zero initially, the value ntotal/16 should be used as the start value for itotal, 
             // where / stands for the integer division
@@ -36,17 +36,18 @@ namespace sofs19
             // itotal is always greater than or equal to IPB
             else if (itotal < IPB) itotal = IPB;
             // itotal must be rounded up to be multiple of IPB
-            if(itotal % IPB != 0) itotal = itotal + (itotal%IPB); 
+            while(itotal % IPB != 0) itotal = itotal + 1; 
+            
+            // 1 representa o superblock
+            // itotal/IPB representa o numero de blocos dos inodes
+            // segundo 1 representa a raiz
+            // 64 representa a head cache size
+            ntotal = (ntotal - 1 - (itotal/IPB) - 1 - 64);
 
-            //splitting data blocks between reference data blocks and free data blocks   
-            uint32_t nbinodes; // number of blocks of inodes
-            u_int32_t nfbrdb; // number of free data blocks and reference data blocks
-
-            nbinodes = itotal/IPB;
-
-            nfbrdb = ntotal - 2 - nbinodes;
-
-            //if a single block remains, assign to to the inode table
+            // se o resultado da divisão do ntotal pelo RPB for diferente de 1 os nossos cálculos 
+            // estão feitos, senão, teremos que incrementar o numero de blocos de inodes e refazer os cálculos
+            if(ntotal % RPB != 1) ntotal = ntotal / RPB;
+            while(ntotal % RPB == 1) ntotal = ((ntotal - 1 - ((itotal/IPB) + 1 ) - 1 - 64)/RPB);
     }
 };
 
