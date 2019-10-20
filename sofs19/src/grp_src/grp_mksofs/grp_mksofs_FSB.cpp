@@ -17,7 +17,7 @@ namespace sofs19
         SOSuperBlock sb;
         sb.magic = MAGIC_NUMBER;
         sb.version = VERSION_NUMBER;
-        sb.name = *name;
+        strncpy(sb.name, name, PARTITION_NAME_SIZE);
         sb.mntstat = 1; // maybe
         sb.mntcnt = 0;
         sb.ntotal = ntotal;
@@ -32,21 +32,19 @@ namespace sofs19
         // Data blocks metadata
         sb.dz_start = sb.it_size + 1;
         sb.dz_total = sb.ntotal - sb.it_size - 1;
-        sb.free = sb.ntotal - nbref;
+        sb.dz_free = sb.ntotal - nbref;
         sb.head_blk = 1;
         sb.head_idx = 1;                                   
         sb.tail_blk = nbref;
         sb.tail_idx = sb.dz_total - 65; // não percebi a lógica, mas segue este padrão 
         
-        HeadCache head;
         for(int i = 0; i < HEAD_CACHE_SIZE; i++)
-            head.ref[i] = nbref + 1 + i;
-        head.idx = nbref + 1; // maybe
-
-        TailCache tail;
+            sb.head_cache.ref[i] = nbref + 1 + i;
+        sb.head_cache.idx = nbref + 1; // maybe
+        
         for(int i = 0; i < TAIL_CACHE_SIZE; i++)
-            tail.ref[i] = NullReference;
-        tail.idx = 0; // maybe
+            sb.tail_cache.ref[i] = NullReference;
+        sb.tail_cache.idx = 0; // maybe
 
         soWriteRawBlock(0, &sb);
 
