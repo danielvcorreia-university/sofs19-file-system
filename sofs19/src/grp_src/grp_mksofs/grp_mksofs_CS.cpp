@@ -36,7 +36,10 @@ namespace sofs19
 
             if((1 + ib + 1 + HEAD_CACHE_SIZE) >= ntotal) nbref = 0;
             else{
-                if((ntotal - 1 - ib - 1 - HEAD_CACHE_SIZE) % RPB == 1) nbref = ((ntotal - 1 - ib - 1 - HEAD_CACHE_SIZE) - 1) / RPB;
+                if((ntotal - 1 - ib - 1 - HEAD_CACHE_SIZE) % RPB == 1) {
+                    itotal = itotal + 8;
+                    nbref = ((ntotal - 1 - ib - 1 - HEAD_CACHE_SIZE) - 1) / RPB;
+                }
                 else nbref = (ntotal - 1 - ib - 1 - HEAD_CACHE_SIZE) / RPB+1;
             }
 
