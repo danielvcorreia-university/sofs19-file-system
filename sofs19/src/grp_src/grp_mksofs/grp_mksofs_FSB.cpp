@@ -36,7 +36,7 @@ namespace sofs19
         sb.head_blk = 1;
         sb.head_idx = 1;                                   
         sb.tail_blk = nbref;
-        sb.tail_idx = sb.dz_total - 65; // não percebi a lógica, mas segue este padrão 
+        sb.tail_idx = sb.dz_total - 65 - (RPB * (nbref - 1)); // não percebi a lógica, mas segue este padrão 
         
         for(int i = 0; i < HEAD_CACHE_SIZE; i++)
             sb.head_cache.ref[i] = nbref + 1 + i;
