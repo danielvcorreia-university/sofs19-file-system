@@ -18,7 +18,7 @@ namespace sofs19
         sb.magic = MAGIC_NUMBER;
         sb.version = VERSION_NUMBER;
         strncpy(sb.name, name, PARTITION_NAME_SIZE);
-        sb.mntstat = 1; // maybe
+        sb.mntstat = 1; 
         sb.mntcnt = 0;
         sb.ntotal = ntotal;
 
@@ -26,13 +26,13 @@ namespace sofs19
         sb.it_size = itotal/IPB;
         sb.itotal = itotal;
         sb.ifree = itotal - 1;
-        sb.ihead = 1; // maybe
-        sb.itail = itotal - 1; // maybe
+        sb.ihead = 1; 
+        sb.itail = itotal - 1; 
 
         // Data blocks metadata
         sb.dz_start = sb.it_size + 1;
         sb.dz_total = sb.ntotal - sb.it_size - 1;
-        sb.dz_free = sb.ntotal - nbref;
+        sb.dz_free = sb.dz_total - 1 - nbref;
         sb.head_blk = 1;
         sb.head_idx = 1;                                   
         sb.tail_blk = nbref;
@@ -44,7 +44,7 @@ namespace sofs19
         
         for(int i = 0; i < TAIL_CACHE_SIZE; i++)
             sb.tail_cache.ref[i] = NullReference;
-        sb.tail_cache.idx = 0; // maybe
+        sb.tail_cache.idx = 0; 
 
         soWriteRawBlock(0, &sb);
 
