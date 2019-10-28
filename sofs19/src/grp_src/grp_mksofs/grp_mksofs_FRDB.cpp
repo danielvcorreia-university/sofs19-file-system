@@ -20,21 +20,19 @@ namespace sofs19
         /* change the following line by your code */
         
         //return binFillReferenceDataBlocks(ntotal, itotal, nbref);
-
-        uint32_t next_block = itotal/IPB + 1; 
-        uint32_t free_block = next_block + nbref; 
-
+        uint32_t next_block = itotal/IPB + 2;
+        uint32_t next_reference = 2;
+        uint32_t free_block = nbref + 1 + HEAD_CACHE_SIZE;
         for(uint32_t i = 1; i <= nbref; i++){
             uint32_t block[RPB];
-
             if(i == nbref){
                 block[0] = NullReference;
             }else{
-                block[0] = next_block + 1;
+                block[0] = next_reference++;
             }
 
             for(uint32_t k = 1; k < RPB; k++){
-                if(free_block < ntotal + itotal/IPB + 1){
+                if(free_block < ntotal - (itotal/IPB + 1)){
                     block[k] = free_block++;
                 }else{
                     block[k] = NullReference;
@@ -46,9 +44,6 @@ namespace sofs19
         }
 
 
-
-
-        //std::cout << next_block;
 
 
     }
