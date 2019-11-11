@@ -17,7 +17,7 @@ namespace sofs19
         soProbe(604, "%s(%u)\n", __FUNCTION__, itotal);
         
         /*
-         uint32_t nBlocks = itotal/IPB;
+             uint32_t nBlocks = itotal/IPB;
             SOInode inode[IPB];
 
             for(uint32_t block_num = 1 ; block_num < 1 + nBlocks ; block_num++)
