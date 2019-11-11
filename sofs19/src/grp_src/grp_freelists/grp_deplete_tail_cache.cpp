@@ -40,7 +40,61 @@ namespace sofs19
         soProbe(444, "%s()\n", __FUNCTION__);
 
         /* change the following line by your code */
-        binDepleteTailCache();
+        //binDepleteTailCache();
+
+        SOSuperBlock *sb = soGetSuperBlockPointer();
+
+        uint32_t block = sb->tail_blk / RPB;
+        uint32_t used_br = sb->tail_blk % RPB;
+        uint32_t free_br;
+        uint32_t block_pointer[RPB];
+        soReadDataBlock(block, &block_pointer);
+
+        if(sb->tail_cache.idx == TAIL_CACHE_SIZE){
+            return;
+        }
+        
+        if(block == sb->head_blk / RPB){
+            if(sb->head_blk % RPB > sb->tail_blk % RPB){
+                free_br =  (sb->head_blk % RPB) - (sb->tail_blk % RPB);
+            }
+            else{
+                free_br = RPB - used_br;
+            }
+        }
+        else {
+            free_br = RPB - used_br;
+        }
+
+        if(sb->tail_idx > free_br){
+            memcpy(&(block_pointer[used_br]),&(sb->tail_cache), free_br * sizeof(uint32_t));
+
+            if(sb->it_size - 1 > block){
+                sb->tail_blk += free_br;
+            }
+            else {
+                sb->tail_blk = 0;
+            }
+
+            memcpy(&(sb->tail_cache),&(sb->tail_cache.ref[free_br]),((sb->tail_cache.idx) - free_br) * sizeof(uint32_t));
+            sb->tail_cache.idx -= free_br;
+
+            for(uint32_t i=0; i < free_br; i++){
+                sb->tail_cache.ref[(sb->tail_cache.idx)+i] = NullReference;
+            }
+
+        }
+        else{
+            memcpy(&(block_pointer[used_br]),&(sb->tail_cache),(sb->tail_cache.idx)*sizeof(uint32_t));
+            sb->tail_blk += sb->tail_cache.idx;
+            sb->tail_cache.idx = 0;
+
+            for(uint32_t i=0; i < TAIL_CACHE_SIZE;i++){
+                sb->tail_cache.ref[i] = NullReference;
+            }
+        }
+
+        soSaveSuperBlock();
     }
 };
 
