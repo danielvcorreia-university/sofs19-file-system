@@ -16,9 +16,10 @@ namespace sofs19
     {
         soProbe(604, "%s(%u)\n", __FUNCTION__, itotal);
         
-        /*
-             uint32_t nBlocks = itotal/IPB;
+        
+            uint32_t nBlocks = itotal/IPB;
             SOInode inode[IPB];
+            uint32_t nextinode = 0;
 
             for(uint32_t block_num = 1 ; block_num < 1 + nBlocks ; block_num++)
             {
@@ -30,6 +31,8 @@ namespace sofs19
                     inode[i].group = 0;
                     inode[i].size = 0;
                     inode[i].blkcnt = 0;
+                    inode[i].next = nextinode+1;
+                    nextinode = nextinode + 1;
 
             		for(uint32_t a = 0 ; a < N_DIRECT ; a++)
             		{
@@ -52,21 +55,42 @@ namespace sofs19
                         inode[0].lnkcnt = 2;
                         inode[0].owner = getuid();
                         inode[0].group = getgid();
+                        
+                        if (set_date == true){
+                                                
                         inode[0].atime = time(NULL);
                         inode[0].mtime = time(NULL);
                         inode[0].ctime = time(NULL);
+
+                        }
+                        
+                        else {
+                        
+                        inode[0].atime = 0;
+                        inode[0].mtime = 0;
+                        inode[0].ctime = 0;
+                        
+                        }
+                        
                         inode[0].d[0] = 0;          
                         inode[0].size = BlockSize;
+                        inode[0].blkcnt = 1;
                          
+                    }
+
+                    if(block_num == nBlocks && i == IPB-1){
+
+                        inode[i].next = NullReference;
+
                     }
             	}
             	soWriteRawBlock(block_num, &inode);
             }
 
-            */
+            
 
         /* change the following line by your code */
-        return binFillInodeTable(itotal, set_date);
+       // return binFillInodeTable(itotal, set_date);
     }
 };
 
