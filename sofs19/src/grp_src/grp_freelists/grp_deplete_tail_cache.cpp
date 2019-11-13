@@ -50,7 +50,7 @@ namespace sofs19
         uint32_t block_pointer[RPB];
         soReadDataBlock(block, &block_pointer);
 
-        if(sb->tail_cache.idx == TAIL_CACHE_SIZE){
+        if(sb->tail_cache.idx != TAIL_CACHE_SIZE){
             return;
         }
         
