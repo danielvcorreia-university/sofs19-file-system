@@ -9,19 +9,17 @@
 namespace sofs19
 {
     /* ********************************************************* */
-
-#if false
-    static uint32_t grpGetIndirectFileBlock(SOInode * ip, uint32_t fbn);
-    static uint32_t grpGetDoubleIndirectFileBlock(SOInode * ip, uint32_t fbn);
-#endif
-
+    #if true
+        static uint32_t grpGetIndirectFileBlock(SOInode * ip, uint32_t fbn);
+        static uint32_t grpGetDoubleIndirectFileBlock(SOInode * ip, uint32_t fbn);
+    #endif
     /* ********************************************************* */
 
     uint32_t grpGetFileBlock(int ih, uint32_t fbn)
     {
         soProbe(301, "%s(%d, %u)\n", __FUNCTION__, ih, fbn);
 
-        /*
+        
             SOInode* ip = soGetInodePointer(ih);
 			uint32_t IndirectBegin = N_DIRECT;
 			uint32_t DoubleIndirectBegin = (N_INDIRECT * RPB) + IndirectBegin;
@@ -43,15 +41,13 @@ namespace sofs19
 			else{
 				throw SOException(EINVAL, __FUNCTION__);
 			}
-            */
+            
 
-        /* change the following line by your code */
-        return binGetFileBlock(ih, fbn);
+
     }
 
     /* ********************************************************* */
-
-#if false
+    #if true
     static uint32_t grpGetIndirectFileBlock(SOInode * ip, uint32_t afbn)
     {
         soProbe(301, "%s(%d, ...)\n", __FUNCTION__, afbn);
@@ -68,11 +64,10 @@ namespace sofs19
                 return db[pos2];
             }
     }
-#endif
-
+    #endif
     /* ********************************************************* */
 
-#if false
+    #if true
     static uint32_t grpGetDoubleIndirectFileBlock(SOInode * ip, uint32_t afbn)
     {
         soProbe(301, "%s(%d, ...)\n", __FUNCTION__, afbn);
@@ -98,6 +93,7 @@ namespace sofs19
 
             }
     }
-#endif
+    #endif
+
 };
 
