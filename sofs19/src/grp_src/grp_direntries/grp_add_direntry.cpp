@@ -14,7 +14,7 @@ namespace sofs19
     void grpAddDirEntry(int pih, const char *name, uint32_t cin)
     {
         soProbe(202, "%s(%d, %s, %u)\n", __FUNCTION__, pih, name, cin);
-        /*
+        
             if (!strcmp(name, "")) {
             	throw SOException(EINVAL, __FUNCTION__);
             }
@@ -72,9 +72,9 @@ namespace sofs19
 				soWriteFileBlock(pih, i, dir);
 			}
 
-        */
+        
         /* change the following line by your code */
-        binAddDirEntry(pih, name, cin);
+       // binAddDirEntry(pih, name, cin);
     }
 };
 
