@@ -14,7 +14,12 @@ namespace sofs19
     void grpAddDirEntry(int pih, const char *name, uint32_t cin)
     {
         soProbe(202, "%s(%d, %s, %u)\n", __FUNCTION__, pih, name, cin);
-        
+
+			for(unsigned i=0; name[i]!='\0'; i++){
+				if (name[i]=='/') throw SOException(EINVAL, __FUNCTION__);
+			}
+
+
             if (!strcmp(name, "")) {
             	throw SOException(EINVAL, __FUNCTION__);
             }
