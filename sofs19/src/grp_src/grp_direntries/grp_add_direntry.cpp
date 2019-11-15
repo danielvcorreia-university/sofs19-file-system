@@ -30,9 +30,9 @@ namespace sofs19
 
             SOInode* pi = soGetInodePointer(pih);
           
-            int emptySlot = -1;
-            int emptySlotBlockIndex = -1;
-            SODirEntry emptySlotBlock[DPB];
+            int emptyPlace = -1;
+            int emptyPlaceBlockIndex = -1;
+            SODirEntry emptyPlaceBlock[DPB];
             SODirEntry d[DPB];
             uint32_t i = 0;
             for (; i < (pi->size / BlockSize); i++ ) {
@@ -41,10 +41,10 @@ namespace sofs19
 
 				uint32_t j = 0;
 				for (; j < DPB; j++) {
-					if (emptySlot < 0 && d[j].name[0] == '\0') {
-						soReadFileBlock(pih, i, emptySlotBlock);
-						emptySlotBlockIndex = i;
-						emptySlot = j;
+					if (emptyPlace < 0 && d[j].name[0] == '\0') {
+						soReadFileBlock(pih, i, emptyPlaceBlock);
+						emptyPlaceBlockIndex = i;
+						emptyPlace = j;
 					}
 
 					if (!strcmp(d[j].name, name)) {
@@ -53,11 +53,11 @@ namespace sofs19
 				}
             }
 
-			if (emptySlot >= 0) {
+			if (emptyPlace >= 0) {
 
-				memcpy(emptySlotBlock[emptySlot].name, name, SOFS19_MAX_NAME+1);
-				memcpy(&emptySlotBlock[emptySlot].in, &cin, sizeof(uint32_t));
-				soWriteFileBlock(pih, emptySlotBlockIndex, emptySlotBlock);
+				memcpy(emptyPlaceBlock[emptyPlace].name, name, SOFS19_MAX_NAME+1);
+				memcpy(&emptyPlaceBlock[emptyPlace].in, &cin, sizeof(uint32_t));
+				soWriteFileBlock(pih, emptyPlaceBlockIndex, emptyPlaceBlock);
 			}			
 			else {
 
