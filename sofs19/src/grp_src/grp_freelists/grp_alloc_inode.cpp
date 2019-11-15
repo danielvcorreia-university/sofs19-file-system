@@ -49,6 +49,10 @@ namespace sofs19
 
         sb->ihead = in->next;
 
+		if (in->next == NullReference){
+			sb->itail = NullReference;
+		}
+
 		time_t current_time = time(NULL);
 			
 		in->mode = type | perm;
