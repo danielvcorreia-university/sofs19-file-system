@@ -129,10 +129,24 @@ namespace sofs19
         soProbe(303, "%s(..., %u, %u)\n", __FUNCTION__, i2, ffbn);
 
         /* change the following line by your code */
-        throw SOException(ENOSYS, __FUNCTION__); 
+        //throw SOException(ENOSYS, __FUNCTION__);
+        uint32_t count = 0
+        uint32_t i2block = (ffbn / RPB) % RPB
+        unit32_t i2arr[N_DOUBLE_INDIRECT] = ip -> i2;
+        uint32_t db[RPB];
+
+        for(uint32_t i = i2 ; i < N_DOUBLE_INDIRECT; i++){
+            if(i2arr[i] == NullReference){
+                continue;
+            }
+
+            soReadDataBlock(i2arr[i], &db);
+
+            soFreeIndirectFileBlocks(*ip, ,ffbn)
+
+        }
     }
 #endif
 
     /* ********************************************************* */
 };
-
