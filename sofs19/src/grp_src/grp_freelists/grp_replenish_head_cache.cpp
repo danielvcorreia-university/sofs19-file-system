@@ -21,6 +21,7 @@ namespace sofs19
         soProbe(443, "%s()\n", __FUNCTION__);
 
         /* change the following line by your code */
+        /* there are test scrips in /so1920-p5g2/sofs19/test */
 
         SOSuperBlock * super = soGetSuperBlockPointer();
 
