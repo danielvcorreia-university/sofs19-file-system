@@ -33,8 +33,8 @@ namespace sofs19
         if(sb->head_cache.idx == HEAD_CACHE_SIZE)
             soReplenishHeadCache();
 
-        uint32_t block_num = sb->head_cache.ref[0];
-        sb->head_cache.ref[0] = NullReference;
+        uint32_t block_num = sb->head_cache.ref[sb->head_cache.idx];
+        sb->head_cache.ref[sb->head_cache.idx] = NullReference;
         sb->dz_free -= 1;
         sb->head_cache.idx += 1;
 

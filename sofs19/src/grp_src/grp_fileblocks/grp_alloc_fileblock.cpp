@@ -28,12 +28,13 @@ namespace sofs19
 
         if(fbn < 0 || fbn >= dIndirectRange[1]){
             throw SOException(EINVAL, __FUNCTION__);
-        }
+     }
 
         SOInode* ip = soGetInodePointer(ih);
 
         if(fbn < N_DIRECT){
             newBlockRef = soAllocDataBlock();
+            printf("BLOCK: %d\n", fbn);
             ip->d[fbn] = newBlockRef;
             ip->blkcnt++;
         }else if(fbn < dIndirectRange[0]){
@@ -56,35 +57,26 @@ namespace sofs19
         soProbe(302, "%s(%d, ...)\n", __FUNCTION__, afbn);
 
         uint32_t indirect_index = (afbn/RPB) % RPB;
-
         uint32_t ref = afbn % RPB;
 
         uint32_t referencesBlock[RPB];
-
         uint32_t newBlockRef;
 
         if(ip->i1[indirect_index] == NullReference){
-
-
             uint32_t referencesBlockRef = soAllocDataBlock();
             for(uint32_t i = 0; i < RPB; i++) {
                 referencesBlock[i] = NullReference;
             }
-
-            soWriteDataBlock(referencesBlockRef, referencesBlock);
             ip->i1[indirect_index] = referencesBlockRef;
-            soReadDataBlock(ip->i1[indirect_index], &referencesBlock);
-
-            newBlockRef = soAllocDataBlock();
-            referencesBlock[ref] = newBlockRef;
-
-            ip->blkcnt += 2;
+            ip->blkcnt++;
         }else{
             soReadDataBlock(ip->i1[indirect_index], &referencesBlock);
-            newBlockRef = soAllocDataBlock();
-            ip->i1[indirect_index] = newBlockRef;
-            ip->blkcnt += 1;
+
         }
+        newBlockRef = soAllocDataBlock();
+        referencesBlock[ref] = newBlockRef;
+        soWriteDataBlock(ip->i1[indirect_index], referencesBlock);
+        ip->blkcnt++;
         return newBlockRef;
 
     }
@@ -101,6 +93,11 @@ namespace sofs19
 
         uint32_t d_indirect_index = afbn/ RPB / RPB;
 
+        uint32_t indirect_index = (afbn/ RPB) % RPB;
+
+        uint32_t ref = afbn % RPB;
+
+        uint32_t dReferencesBlock[RPB];
 
         uint32_t referencesBlock[RPB];
 
@@ -108,22 +105,38 @@ namespace sofs19
 
         if(ip->i2[d_indirect_index] == NullReference){
 
+            uint32_t dReferencesBlockRef = soAllocDataBlock();
+
+            for(uint32_t i = 0; i < RPB; i++) {
+                dReferencesBlock[i] = NullReference;
+            }
+            ip->i2[d_indirect_index] = dReferencesBlockRef;
+            ip->blkcnt++;
+
+        }else{
+            soReadDataBlock(ip->i2[d_indirect_index], &dReferencesBlock);
+        }
+
+        if(dReferencesBlock[indirect_index] == NullReference){
             uint32_t referencesBlockRef = soAllocDataBlock();
+
             for(uint32_t i = 0; i < RPB; i++) {
                 referencesBlock[i] = NullReference;
             }
-            soWriteDataBlock(referencesBlockRef, referencesBlock);
-
-            ip->i2[d_indirect_index] = referencesBlockRef;
-            soReadDataBlock(ip->i2[d_indirect_index], &referencesBlock);
-
-            newBlockRef = grpAllocIndirectFileBlock(ip, afbn);
+            dReferencesBlock[indirect_index] = referencesBlockRef;
             ip->blkcnt++;
         }else{
-            soReadDataBlock(ip->i2[d_indirect_index], &referencesBlock);
-            newBlockRef = grpAllocIndirectFileBlock(ip, afbn);
+            soReadDataBlock(dReferencesBlock[indirect_index], &referencesBlock);
         }
 
+        newBlockRef = soAllocDataBlock();
+
+        referencesBlock[ref] = newBlockRef;
+        soWriteDataBlock(ip->i2[d_indirect_index], dReferencesBlock);
+
+        soWriteDataBlock(dReferencesBlock[indirect_index], referencesBlock);
+
+        ip->blkcnt++;
         return newBlockRef;
 
     }
