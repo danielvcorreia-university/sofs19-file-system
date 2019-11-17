@@ -15,8 +15,25 @@ namespace sofs19
     {
         soProbe(204, "%s(%d, %s, %s)\n", __FUNCTION__, pih, name, newName);
 
-        /* change the following line by your code */
-        binRenameDirEntry(pih, name, newName);
+        SOInode* ip = soGetInodePointer(pih);
+        SODirEntry dir[DPB];
+
+        bool exists = false;
+        
+        for(uint32_t i = 0; i < ip->size / BlockSize; i++) {
+            
+            soReadFileBlock(pih, i, dir);
+            
+            for(uint32_t entry_ind = 0; entry_ind < DPB; entry_ind++) {
+                if(strcmp(dir[entry_ind].name, name) == 0 && !exists) {
+                    memcpy(dir[entry_ind].name, newName, SOFS19_MAX_NAME);
+                    soWriteFileBlock(pih, i, dir);
+                    exists = true;
+                }
+            }
+        }    
+        if(!exists)
+            throw SOException(ENOENT, __FUNCTION__);    
     }
 };
 

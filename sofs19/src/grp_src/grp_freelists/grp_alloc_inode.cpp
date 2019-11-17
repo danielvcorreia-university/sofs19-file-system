@@ -27,14 +27,14 @@ namespace sofs19
     {
         soProbe(401, "%s(0x%x, 0%03o)\n", __FUNCTION__, type, perm);
 
-        /*
+        
         SOSuperBlock *sb = soGetSuperBlockPointer();
 			
 		if(type != S_IFREG && type != S_IFDIR && type != S_IFLNK){
 			throw SOException(EINVAL,__FUNCTION__); 
 		}
 
-        if(perm < 0000 | perm > 0777){
+        if((perm < 0000) || (perm > 0777)){
             throw SOException(EINVAL,__FUNCTION__);
         }
 
@@ -48,6 +48,10 @@ namespace sofs19
 		SOInode* in = soGetInodePointer(inode_Handler);
 
         sb->ihead = in->next;
+
+		if (in->next == NullReference){
+			sb->itail = NullReference;
+		}
 
 		time_t current_time = time(NULL);
 			
@@ -72,10 +76,8 @@ namespace sofs19
 					
 		return inodenb;
 
-        */
-
         /* change the following line by your code */
-        return binAllocInode(type, perm);
+        //return binAllocInode(type, perm);
     }
 };
 

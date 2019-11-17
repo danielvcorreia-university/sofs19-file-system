@@ -48,12 +48,25 @@ namespace sofs19
         uint32_t used_br = sb->tail_blk % RPB;
         uint32_t free_br;
         uint32_t block_pointer[RPB];
+        uint32_t new_block;
         soReadDataBlock(block, &block_pointer);
 
-        if(sb->tail_cache.idx == TAIL_CACHE_SIZE){
+        if(sb->tail_cache.idx != TAIL_CACHE_SIZE){
             return;
         }
-        
+
+
+        if(sb->tail_blk == NullReference && sb->head_blk == NullReference){
+           new_block = soAllocDataBlock();
+           sb->tail_blk = new_block;
+           sb->head_blk = new_block;
+        }
+
+        if(sb->tail_idx == RPB){
+            new_block = soAllocDataBlock();
+            sb->tail_blk = new_block;
+        }
+
         if(block == sb->head_blk / RPB){
             if(sb->head_blk % RPB > sb->tail_blk % RPB){
                 free_br =  (sb->head_blk % RPB) - (sb->tail_blk % RPB);
