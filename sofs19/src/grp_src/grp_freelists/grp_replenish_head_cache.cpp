@@ -27,75 +27,88 @@ namespace sofs19
         /* Does nothing if the cache isn't empty */
         if ( super -> head_cache.idx != HEAD_CACHE_SIZE )
             { return; }
-
-        /* If there are no Reference Data Blocks it will go get references from the tail cache */
+        /* If there are no more free data block throw exception */
+        if ( super -> dz_free == 0 ) 
+            { return; }
+        /* There are no Blocks with References to free Data Blocks, */
+        /* Then it will go get references from the tail cache */
         if ( super -> head_blk == NullReference )
-        { 
-            /* Fill the head cache with the references from tail cache */
-            uint32_t limit_cache_copys = super -> tail_cache.idx - 1;
-
-            if ( limit_cache_copys > HEAD_CACHE_SIZE )
-                { limit_cache_copys = HEAD_CACHE_SIZE; }
-
-            uint32_t head_idx_write = ( super -> head_cache.idx ) - limit_cache_copys;
-            uint32_t tail_idx_read = ( super -> tail_cache.idx ) - limit_cache_copys;
-            
-            /* Writing the data from the tail to de head of the cache */
-            memcpy( &(super -> head_cache.ref[head_idx_write]) , &(super -> tail_cache.ref[tail_idx_read]), limit_cache_copys * sizeof( uint32_t ) );
-            /* Deleting references copied from tail of the cache */
-            memset( &(super -> tail_cache.ref[tail_idx_read]), NullReference, limit_cache_copys * sizeof( uint32_t ) );
-            /* Update head_cache.idx and tail_cache.idx */
-            super -> head_cache.idx = head_idx_write;
-            super -> tail_cache.idx = tail_idx_read;
+        {
+            /* There are more references from tail cache than head cache size */
+            if ( super -> tail_cache.idx > HEAD_CACHE_SIZE )
+            { 
+                //&((sb->ircache).ref[destStart]
+                memcpy( super -> head_cache.ref , super -> tail_cache.ref , \
+                        HEAD_CACHE_SIZE * sizeof( uint32_t ) );
+                memcpy( super -> tail_cache.ref , &( ( super -> tail_cache ).ref[ HEAD_CACHE_SIZE ] ), \
+                        ( super -> tail_cache.idx - HEAD_CACHE_SIZE ) * sizeof( uint32_t ) );
+                memset( &( ( super -> tail_cache ).ref[ super -> tail_cache.idx - HEAD_CACHE_SIZE ] ), NullReference, \
+                        HEAD_CACHE_SIZE * sizeof( uint32_t ) );
+                /* Updating super block variables */
+                super -> head_cache.idx = 0;
+                super -> tail_cache.idx -= HEAD_CACHE_SIZE;
+            }
+            /* There are fewer references from tail cache than head cache size */
+            else 
+            {
+                memcpy( &( ( super -> head_cache ).ref[ HEAD_CACHE_SIZE - super -> tail_cache.idx ] ), \
+                        super -> tail_cache.ref, super -> tail_cache.idx * sizeof( uint32_t ) );
+                memset( super -> tail_cache.ref, NullReference, \
+                        super -> tail_cache.idx * sizeof( uint32_t ) );
+                /* Updating super block variables */
+                super -> head_cache.idx = HEAD_CACHE_SIZE - super -> tail_cache.idx;
+                super -> tail_cache.idx = 0;
+            }
         }
-
+        /* There are Blocks with References to free Data Blocks */
         else 
         {
-            /* Boolean variable to check if head reference data block becames empty */
-            bool freed_head_block = false;
-            /* Aware of first reference of block being the reference to next reference data block */
-            uint32_t limit_cache_copys = RPB - ( super -> head_idx );
-            /* Save the block data into memory */
-            uint32_t references_head_block[RPB];
-            soReadDataBlock( super -> head_blk, references_head_block );
-
-            if ( limit_cache_copys > HEAD_CACHE_SIZE )
-                { limit_cache_copys = HEAD_CACHE_SIZE; }
-
-            else { freed_head_block = true; }
-
-            uint32_t head_idx_write = ( super -> head_cache.idx ) - limit_cache_copys;
-            uint32_t block_idx_read = ( super -> head_idx );
-
-            /* Writing the data from head reference data block to de head of the cache */
-            memcpy( &(super -> head_cache.ref[head_idx_write]), &references_head_block[block_idx_read], limit_cache_copys * sizeof( uint32_t ) );
-            /* Changing references copied from head reference data block to NullReference */
-            memset( &(references_head_block[block_idx_read]), NullReference, limit_cache_copys * sizeof( uint32_t ) );
-            /* Update head_cache.idx and head_idx */
-            super -> head_cache.idx = head_idx_write;
-            super -> head_idx = block_idx_read + limit_cache_copys;
+            uint32_t limit_copys = RPB - super -> head_idx;
+            uint32_t old_head = super -> head_blk;
+            uint32_t ref_head_blk[RPB];
+            soReadDataBlock( super -> head_blk, ref_head_blk );
+            if ( ref_head_blk[0] == NullReference )
+                { limit_copys = super -> tail_idx - super -> head_idx; }
             
-            if ( freed_head_block )
-            {
-                /* Head Reference Data Block update */
-                memcpy( &references_head_block, &( super -> head_blk ), sizeof( uint32_t ) );
-                memset( &references_head_block, NullReference, sizeof( uint32_t ) );
-                /* Update head idx */
-                super -> head_idx = 1;
-                /* If there are no more reference data blocks */
-                if ( super -> head_blk == NullReference )
-                {
-                    /* Updating head_idx, tail_blk, tail_idx to NullReference */
-                    memset( &( super -> head_idx ), NullReference, 3 * sizeof( uint32_t ) );
-                }
-                
-                binFreeDataBlock( super -> head_blk );
+            if ( limit_copys > HEAD_CACHE_SIZE ) 
+            { 
+                limit_copys = HEAD_CACHE_SIZE;
+                memcpy( super -> head_cache.ref, &( ref_head_blk[ super -> head_idx ] ), \
+                            limit_copys * sizeof( uint32_t ) ); 
+                memset( &( ref_head_blk[ super -> head_idx ] ), NullReference, \
+                        limit_copys * sizeof( uint32_t ) );
+                /* Updating super block variables */
+                super -> head_cache.idx = 0;
+                super -> head_idx += HEAD_CACHE_SIZE;
             }
-            
-            else { soWriteDataBlock ( super -> head_blk, &( super -> head_blk ) ); }
+            else
+            { 
+                memcpy( &( ( super -> head_cache ).ref[ HEAD_CACHE_SIZE - limit_copys ] ), \
+                        &( ref_head_blk[ super -> head_idx ] ), limit_copys * sizeof( uint32_t ) ); 
+                memset( &( ref_head_blk[ super -> head_idx ] ), NullReference, \
+                        limit_copys * sizeof( uint32_t ) );
+                /* Updating super block variables */
+                super -> head_cache.idx = HEAD_CACHE_SIZE - limit_copys;
+                /* There are no more Blocks with References to Free Data Blocks */
+                if ( ref_head_blk[0] == NullReference )
+                {
+                    /* There are no more references to free data blocks in blocks with references */
+                    super -> head_blk = NullReference; 
+                    super -> head_idx = NullReference; 
+                    super -> tail_blk = NullReference; 
+                    super -> tail_idx = NullReference;
+                }
+                else
+                {
+                    super -> head_blk = ref_head_blk[0];
+                    super -> head_idx = 1;
+                    ref_head_blk[0] = NullReference;
+                }
+                binFreeDataBlock( old_head );
+            }
+            soWriteDataBlock( old_head, ref_head_blk );
         }
-
-        soSaveSuperBlock ();
+        soSaveSuperBlock ( );
     }
 };
 
