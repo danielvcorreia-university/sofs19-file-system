@@ -52,7 +52,6 @@ namespace sofs19
         }
         if(i == N_DIRECT || (ffbn >= N_DIRECT && ffbn < i2start)) {
             ffbni1 = ffbn - N_DIRECT;
-            printf("i1v1 - %d", (ffbni1 / RPB) % RPB);
             grpFreeIndirectFileBlocks(ip, (ffbni1 / RPB) % RPB , ffbni1);
             i = i2start;
             ffbn = i2start;
@@ -78,12 +77,7 @@ namespace sofs19
         uint32_t db[RPB];
         bool empty = true;
 
-        printf("ig");
-        printf("refindex - %d", refindex);
-        printf("i1 - %d", i1);
-
         for(uint32_t i = i1; i < N_INDIRECT; i++) {
-            printf("bloco - %d", ip->i1[i]);
             if(ip->i1[i] == NullReference)
                 continue;
             
@@ -187,6 +181,10 @@ namespace sofs19
                     ip->i2[i] = NullReference;
                     count++;
                 }                
+            } else {
+                soFreeDataBlock(ip->i2[i]);
+                ip->i2[i];
+                count++;
             }
 
             soWriteDataBlock(ip->i2[i], &db1);
