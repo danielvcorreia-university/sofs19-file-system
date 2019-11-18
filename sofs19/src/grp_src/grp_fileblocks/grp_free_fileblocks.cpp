@@ -86,7 +86,6 @@ namespace sofs19
             for(uint32_t iref = refindex; iref < RPB; iref++) {
                 if(db[iref] != NullReference) {
                     count++;
-                    printf("%d", iref);
                     soFreeDataBlock(db[iref]);
                     db[iref] = NullReference;
                 }
@@ -183,7 +182,7 @@ namespace sofs19
                 }                
             } else {
                 soFreeDataBlock(ip->i2[i]);
-                ip->i2[i];
+                ip->i2[i] = NullReference;
                 count++;
             }
 
