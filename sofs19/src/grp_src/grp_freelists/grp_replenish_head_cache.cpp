@@ -30,7 +30,7 @@ namespace sofs19
             { return; }
         /* If there are no more free data block throw exception */
         if ( super -> dz_free == 0 ) 
-            { return; }
+            { throw SOException( -1 , __FUNCTION__ ); }
         /* There are no Blocks with References to free Data Blocks, */
         /* Then it will go get references from the tail cache */
         if ( super -> head_blk == NullReference )
@@ -105,7 +105,7 @@ namespace sofs19
                     super -> head_idx = 1;
                     ref_head_blk[0] = NullReference;
                 }
-                binFreeDataBlock( old_head );
+                soFreeDataBlock( old_head );
             }
             soWriteDataBlock( old_head, ref_head_blk );
         }

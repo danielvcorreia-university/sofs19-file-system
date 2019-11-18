@@ -18,9 +18,9 @@ namespace sofs19
         /* change the following line by your code */
         //return binCheckDirEmpty(ih);
 
-        SOInode* node = soGetInodePointer(ih);
+        SOInode* inode = soGetInodePointer(ih);
 
-        uint32_t block = (node->size) / BlockSize;
+        uint32_t block = (inode->size) / BlockSize;
 
         SODirEntry buf[DPB];
 
@@ -31,7 +31,7 @@ namespace sofs19
         while(blockCount < block){
             tmp = soGetFileBlock(ih,blockNum);
 
-            if(tmp = NullReference){
+            if(tmp == NullReference){
                 soReadFileBlock(ih,blockNum,buf);
 
                 for(uint32_t i = 2; i < DPB; i++){

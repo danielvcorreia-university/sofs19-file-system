@@ -16,7 +16,7 @@ namespace sofs19
 
         /* change the following line by your code */
         
-        uint32_t data_block_number = binGetFileBlock(ih, fbn);
+        uint32_t data_block_number = soGetFileBlock(ih, fbn);
 
         if ( data_block_number == NullReference )
             { memset( buf, '\0', BlockSize ); }
