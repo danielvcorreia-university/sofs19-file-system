@@ -41,28 +41,25 @@ namespace sofs19
         uint32_t ffbni1 = 0;
         uint32_t ffbni2 = 0;
         if(ffbn < N_DIRECT) {
-            for(uint32_t i = ffbn; i < N_DIRECT; i++) {
+            for(i = ffbn; i < N_DIRECT; i++) {
                 if(ip->d[i] != NullReference) {
                     count++;
+                    soFreeDataBlock(ip->d[i]);
                     ip->d[i] = NullReference;
                 }
             }
+            ffbn = 8;
         }
         if(i == N_DIRECT || (ffbn >= N_DIRECT && ffbn < i2start)) {
-            if(i == N_DIRECT)
-                grpFreeIndirectFileBlocks(ip, 0, 0);
-            else
-                ffbni1 = ffbn - N_DIRECT;
-                grpFreeIndirectFileBlocks(ip, (ffbni1 / RPB) % RPB , ffbni1);
-
+            ffbni1 = ffbn - N_DIRECT;
+            printf("i1v1 - %d", (ffbni1 / RPB) % RPB);
+            grpFreeIndirectFileBlocks(ip, (ffbni1 / RPB) % RPB , ffbni1);
             i = i2start;
+            ffbn = i2start;
         }
         if(i == i2start || (ffbn >= i2start && ffbn < i2end)) {
-            if(i == i2start)
-                grpFreeDoubleIndirectFileBlocks(ip, 0, 0);
-            else
-                ffbni2 = ffbn - N_DIRECT - N_INDIRECT * RPB;
-                grpFreeDoubleIndirectFileBlocks(ip, ffbni1 / RPB / RPB, ffbni2);
+            ffbni2 = ffbn - N_DIRECT - N_INDIRECT * RPB;
+            grpFreeDoubleIndirectFileBlocks(ip, ffbni2 / RPB / RPB, ffbni2);
         }
 
         ip->blkcnt -= count;
@@ -71,7 +68,6 @@ namespace sofs19
 
     /* ********************************************************* */
 
-#if true
     static bool grpFreeIndirectFileBlocks(SOInode * ip, uint32_t i1, uint32_t ffbn)
     {
         soProbe(303, "%s(..., %u, %u)\n", __FUNCTION__, i1, ffbn);
@@ -79,74 +75,126 @@ namespace sofs19
         /* change the following line by your code */
         uint32_t count = 0;
         uint32_t refindex = ffbn % RPB;
-        uint32_t rdb[RPB];
-        bool empty;
+        uint32_t db[RPB];
+        bool empty = true;
+
+        printf("ig");
+        printf("refindex - %d", refindex);
+        printf("i1 - %d", i1);
 
         for(uint32_t i = i1; i < N_INDIRECT; i++) {
+            printf("bloco - %d", ip->i1[i]);
             if(ip->i1[i] == NullReference)
                 continue;
             
-            soReadDataBlock(ip->i1[i], &rdb);
+            soReadDataBlock(ip->i1[i], &db);
             
             for(uint32_t iref = refindex; iref < RPB; iref++) {
-                if(rdb[iref] != NullReference) {
+                if(db[iref] != NullReference) {
                     count++;
-                    rdb[iref] = NullReference;
+                    printf("%d", iref);
+                    soFreeDataBlock(db[iref]);
+                    db[iref] = NullReference;
                 }
             }
             
             if(i == i1) {
-                empty = true;
 
                 for(uint32_t iref = 0; iref < RPB; iref++) {
-                    if(rdb[iref] != NullReference)
+                    if(db[iref] != NullReference)
                         empty = false;
                 }
                 
                 if(empty) {
+                    soFreeDataBlock(ip->i1[i]);
                     ip->i1[i] = NullReference;
                     count++;
                 }
             } else {
+                soFreeDataBlock(ip->i1[i]);
                 ip->i1[i] = NullReference;
                 count++;
             } 
 
-            soWriteDataBlock(ip->i1[i], &rdb);
+            soWriteDataBlock(ip->i1[i], &db);
 
             refindex = 0;   // o refindex leva reset para os próximos fileblocks serem totalmente libertados  
         }
         ip->blkcnt -= count;
-        return !empty;
+        return empty;
     }
-#endif
 
     /* ********************************************************* */
 
-#if true
     static bool grpFreeDoubleIndirectFileBlocks(SOInode * ip, uint32_t i2, uint32_t ffbn)
     {
         soProbe(303, "%s(..., %u, %u)\n", __FUNCTION__, i2, ffbn);
 
         /* change the following line by your code */
-        //throw SOException(ENOSYS, __FUNCTION__);
-        uint32_t count = 0
-        uint32_t i2block = (ffbn / RPB) % RPB
-        unit32_t i2arr[N_DOUBLE_INDIRECT] = ip -> i2;
-        uint32_t db[RPB];
+        uint32_t count = 0;
+        uint32_t refindex = (ffbn / RPB) % RPB;
+        uint32_t refindex2 = ffbn % RPB;
+        uint32_t db1[RPB];
+        uint32_t db2[RPB];
+        bool empty = true;
 
-        for(uint32_t i = i2 ; i < N_DOUBLE_INDIRECT; i++){
-            if(i2arr[i] == NullReference){
+        for(uint32_t i = i2; i < N_DOUBLE_INDIRECT; i++) {
+            if(ip->i2[i] == NullReference)
                 continue;
+            
+            soReadDataBlock(ip->i2[i], &db1);
+
+            for(uint32_t i1 = refindex; i1 < RPB; i1++) {
+                if(db1[i1] == NullReference)
+                    continue;
+            
+                soReadDataBlock(db1[i], &db2);
+
+                for(uint32_t iref = refindex2; iref < RPB; iref++) {
+                    if(db2[iref] != NullReference) {
+                        count++;
+                        soFreeDataBlock(db2[iref]);
+                        db2[iref] = NullReference;
+                    }
+                }
+                
+                if(i1 == refindex) {
+
+                    for(uint32_t iref = 0; iref < RPB; iref++) {
+                        if(db2[iref] != NullReference)
+                            empty = false;
+                    }
+                    
+                    if(empty) {
+                        soFreeDataBlock(db1[i1]);
+                        db1[i1] = NullReference;
+                        count++;
+                    }
+                } else {
+                    soFreeDataBlock(db1[i1]);
+                    db1[i1] = NullReference;
+                    count++;
+                } 
+
+                soWriteDataBlock(db1[i1], &db2);
+
+                refindex2 = 0;   // o refindex leva reset para os próximos fileblocks serem totalmente libertados
             }
 
-            soReadDataBlock(i2arr[i], &db);
+            if(i == i2) {
+                if(empty) {
+                    soFreeDataBlock(ip->i2[i]);
+                    ip->i2[i] = NullReference;
+                    count++;
+                }                
+            }
 
-            soFreeIndirectFileBlocks(*ip, ,ffbn)
-
+            soWriteDataBlock(ip->i2[i], &db1);
+            refindex = 0;
         }
+        ip->blkcnt -= count;
+        return empty;
     }
-#endif
 
     /* ********************************************************* */
 };
