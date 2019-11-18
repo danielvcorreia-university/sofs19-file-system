@@ -38,12 +38,18 @@ namespace sofs19
 
         soCloseInode(inode_tail);
 
+
+
         int inode_h = soOpenInode(in);
 
         SOInode *inode = soGetInodePointer(inode_h);
 
 
         superBlock -> itail = in;
+
+        if (superBlock -> ihead == NullReference){
+            superBlock -> ihead = in;
+        }
 
         inode -> mode = INODE_FREE;
         inode -> next = NullReference;
