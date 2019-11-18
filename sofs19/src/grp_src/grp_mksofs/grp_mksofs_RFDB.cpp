@@ -11,6 +11,7 @@ namespace sofs19
 {
     void grpResetFreeDataBlocks(uint32_t ntotal, uint32_t itotal, uint32_t nbref)
     {
+        printf("ola");
         soProbe(607, "%s(%u, %u, %u)\n", __FUNCTION__, ntotal, itotal, nbref);
 
         /* change the following line by your code */

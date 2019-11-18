@@ -23,33 +23,35 @@ namespace sofs19
     {
         soProbe(402, "%s(%u)\n", __FUNCTION__, in);
 
+        //printf("inode: %d\n",in);
+
         /* change the following line by your code */
         //binFreeInode(in);
 
         SOSuperBlock *superBlock = soGetSuperBlockPointer();
+        if (superBlock -> ifree == 0){
+            superBlock -> ihead = in;
+        }
 
-        superBlock -> ifree ++;
+        //printf("itail: %d\n",superBlock -> itail);
+        if(superBlock -> itail != -1){
+            int inode_tail = soOpenInode(superBlock -> itail);
+            SOInode *tail = soGetInodePointer(inode_tail);
 
-        int inode_tail = soOpenInode(superBlock -> itail);
+            tail -> next = in;
+            soCloseInode(inode_tail);
+        }
 
-        SOInode *tail = soGetInodePointer(inode_tail);
-
-        tail -> next = in;
-
-        soCloseInode(inode_tail);
-
-
-
+        //printf("teste1%d\n",in);
         int inode_h = soOpenInode(in);
+
+        //printf("teste2%d\n",in);
+
+        //sofs19::soCheckInodeHandler(inode_h, 0);
 
         SOInode *inode = soGetInodePointer(inode_h);
 
-
         superBlock -> itail = in;
-
-        if (superBlock -> ihead == NullReference){
-            superBlock -> ihead = in;
-        }
 
         inode -> mode = INODE_FREE;
         inode -> next = NullReference;
@@ -61,11 +63,15 @@ namespace sofs19
         inode -> mtime = 0;
         inode -> ctime = 0;
 
+        superBlock -> ifree ++;
+
         soSaveInode(inode_h);
 
         soSaveSuperBlock();
 
         soCloseInode(inode_h);
+
+        //printf("tail: %d\n", superBlock -> itail);
 
     }
 };
